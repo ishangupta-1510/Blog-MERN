@@ -79,6 +79,7 @@ button {
   color: #fff;
   padding: 7px 0;
 }
-form h1 {
+form.login h1,
+form.register h1 {
   text-align: center;
 }
