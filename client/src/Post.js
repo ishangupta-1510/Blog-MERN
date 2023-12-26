@@ -1,23 +1,28 @@
-export default function Post() {
+import { formatISO9075 } from "date-fns";
+export default function Post({
+  title,
+  summary,
+  cover,
+  content,
+  createdAt,
+  author,
+}) {
   return (
     <div className="post">
       <div className="image">
-        <img
+        {/* <img
           src="https://techcrunch.com/wp-content/uploads/2021/11/GettyImages-1271698849.jpg?w=850&h=492&crop=1"
           alt=""
-        ></img>
+        ></img> */}
+        <img src={"http://localhost:4000/" + cover} alt=""></img>
       </div>
       <div className="text">
-        <h2>Full-house battery backup</h2>
+        <h2>{title}</h2>
         <p className="info">
-          <a className="author">Ishan</a>
-          <time>2023-01-06 16:45</time>
+          <a className="author">{author.username}</a>
+          <time>{formatISO9075(new Date(createdAt))}</time>
         </p>
-        <p className="summary">
-          t was pure coincidence, but months before the pandemic took hold
-          around the world, IndieBio — a startup accelerator devoted to startups
-          using biology to
-        </p>
+        <p className="summary">{summary}</p>
       </div>
     </div>
   );

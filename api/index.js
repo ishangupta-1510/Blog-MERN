@@ -17,6 +17,7 @@ const salt = bcrypt.genSaltSync(10);
 
 app.use(express.json());
 app.use(cookieParser());
+app.use("/uploads", express.static(__dirname + "/uploads"));
 
 mongoose.connect(
   "mongodb+srv://ishan:ishan@cluster0.dchz6ac.mongodb.net/?retryWrites=true&w=majority"
@@ -38,7 +39,6 @@ app.post("/login", async (req, res) => {
   const { username, password } = req.body;
   const userDoc = await User.findOne({ username });
   const passOK = bcrypt.compareSync(password, userDoc.password);
-  console.log(passOK);
   if (passOK) {
     jwt.sign({ username, id: userDoc._id }, secret, {}, (e, token) => {
       if (e) throw e;
@@ -52,7 +52,6 @@ app.post("/login", async (req, res) => {
   }
 });
 app.listen(4000);
-//mongodb+srv://ishan:ishan@cluster0.dchz6ac.mongodb.net/?retryWrites=true&w=majority
 app.get("/profile", (req, res) => {
   const { token } = req.cookies;
   jwt.verify(token, secret, {}, (e, info) => {
@@ -72,12 +71,24 @@ app.post("/post", uploadMiddleware.single("file"), async (req, res) => {
   const ext = parts[parts.length - 1];
   const newPath = path + "." + ext;
   fs.renameSync(path, newPath);
-  const { title, summary, content } = req.body;
-  const postDoc = await Post.create({
-    title,
-    summary,
-    content,
-    cover: newPath,
+
+  const { token } = req.cookies;
+  jwt.verify(token, secret, {}, async (e, info) => {
+    if (e) throw e;
+    const { title, summary, content } = req.body;
+    const postDoc = await Post.create({
+      title,
+      summary,
+      content,
+      cover: newPath,
+      author: info.id,
+    });
+    res.json(postDoc);
   });
-  res.json(postDoc);
+});
+
+app.get("/post", async (req, res) => {
+  res.json(
+    await Post.find().populate("author", ["username"]).sort({ createdAt: -1 })
+  );
 });
